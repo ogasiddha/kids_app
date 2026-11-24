@@ -25,22 +25,25 @@
     }
     header {
       background: #FF6B6B;
-      padding: 10px 15px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .tabs {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     .tab-btn {
       background: #FFE66D;
       border: none;
-      padding: 10px 18px;
-      border-radius: 20px;
-      font-size: 18px;
+      padding: 8px 14px;
+      border-radius: 18px;
+      font-size: 16px;
       font-weight: bold;
       color: #333;
       cursor: pointer;
@@ -56,8 +59,8 @@
       align-items: center;
     }
     .color-dot {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 3px solid white;
       cursor: pointer;
@@ -69,9 +72,9 @@
     .action-btn {
       background: white;
       border: none;
-      padding: 8px 14px;
-      border-radius: 15px;
-      font-size: 16px;
+      padding: 7px 12px;
+      border-radius: 14px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -81,14 +84,14 @@
       padding: 6px;
       overflow-x: auto;
       white-space: nowrap;
-      gap: 6px;
+      touch-action: pan-x;
     }
     .consonant-btn {
       background: white;
       border: 2px solid #FF6B6B;
       border-radius: 10px;
-      padding: 5px 12px;
-      font-size: 18px;
+      padding: 5px 11px;
+      font-size: 17px;
       font-weight: bold;
       margin-right: 5px;
     }
@@ -96,12 +99,34 @@
       background: #FF6B6B;
       color: white;
     }
+    #info-banner {
+      background: #FFFFFF;
+      margin: 8px 16px 0;
+      padding: 8px 16px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      min-height: 64px;
+    }
+    #info-pic {
+      font-size: 42px;
+      line-height: 1;
+    }
+    #info-text {
+      font-size: 26px;
+      font-weight: bold;
+      color: #222;
+    }
     main {
       flex: 1;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 8px 16px 14px;
     }
     canvas {
       background: white;
@@ -115,8 +140,8 @@
       background: #4ECDC4;
       color: white;
       border: none;
-      width: 60px;
-      height: 60px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       font-size: 30px;
       font-weight: bold;
@@ -124,8 +149,8 @@
       cursor: pointer;
       z-index: 10;
     }
-    #prev-btn { left: 15px; }
-    #next-btn { right: 15px; }
+    #prev-btn { left: 24px; }
+    #next-btn { right: 24px; }
   </style>
 </head>
 <body>
@@ -133,9 +158,10 @@
 <header>
   <div class="tabs">
     <button class="tab-btn active" onclick="setMode('abcd', this)">ABCD</button>
-    <button class="tab-btn" onclick="setMode('swar', this)">स्वर (अ-अः)</button>
+    <button class="tab-btn" onclick="setMode('swar', this)">स्वर</button>
     <button class="tab-btn" onclick="setMode('barakhadi', this)">बाराखडी</button>
-    <button class="tab-btn" onclick="setMode('numbers', this)">1 - 100</button>
+    <button class="tab-btn" onclick="setMode('marathi_num', this)">१-१००</button>
+    <button class="tab-btn" onclick="setMode('eng_num', this)">1-100</button>
   </div>
   <div class="tools">
     <div class="color-dot selected" style="background: #FF3B30;" onclick="setColor('#FF3B30', this)"></div>
@@ -148,6 +174,11 @@
 
 <div id="barakhadi-bar"></div>
 
+<div id="info-banner" onclick="speakCurrent()">
+  <span id="info-pic">🍎</span>
+  <span id="info-text">A for Apple</span>
+</div>
+
 <main>
   <button id="prev-btn" class="nav-btn" onclick="prevItem()">&#8249;</button>
   <canvas id="board"></canvas>
@@ -157,21 +188,122 @@
 <script>
   const canvas = document.getElementById('board');
   const ctx = canvas.getContext('2d');
-  
-  const abcdList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  const swarList = ["अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ", "ए", "ऐ", "ओ", "औ", "अं", "अः"];
-  const vyanjanList = ["क","ख","ग","घ","च","छ","ज","झ","ट","ठ","ड","ढ","ण","त","थ","द","ध","न","प","फ","ब","भ","म","य","र","ल","व","श","ष","स","ह","ळ","क्ष","ज्ञ"];
+
+  const abcdData = [
+    { char: 'A', word: 'Apple', pic: '🍎', speech: 'A for Apple' },
+    { char: 'B', word: 'Ball', pic: '⚽', speech: 'B for Ball' },
+    { char: 'C', word: 'Cat', pic: '🐱', speech: 'C for Cat' },
+    { char: 'D', word: 'Dog', pic: '🐶', speech: 'D for Dog' },
+    { char: 'E', word: 'Elephant', pic: '🐘', speech: 'E for Elephant' },
+    { char: 'F', word: 'Fish', pic: '🐟', speech: 'F for Fish' },
+    { char: 'G', word: 'Grapes', pic: '🍇', speech: 'G for Grapes' },
+    { char: 'H', word: 'Hen', pic: '🐔', speech: 'H for Hen' },
+    { char: 'I', word: 'Ice cream', pic: '🍨', speech: 'I for Ice cream' },
+    { char: 'J', word: 'Joker', pic: '🃏', speech: 'J for Joker' },
+    { char: 'K', word: 'Kite', pic: '🪁', speech: 'K for Kite' },
+    { char: 'L', word: 'Lion', pic: '🦁', speech: 'L for Lion' },
+    { char: 'M', word: 'Mango', pic: '🥭', speech: 'M for Mango' },
+    { char: 'N', word: 'Nest', pic: '🪺', speech: 'N for Nest' },
+    { char: 'O', word: 'Orange', pic: '🍊', speech: 'O for Orange' },
+    { char: 'P', word: 'Parrot', pic: '🦜', speech: 'P for Parrot' },
+    { char: 'Q', word: 'Queen', pic: '👑', speech: 'Q for Queen' },
+    { char: 'R', word: 'Rabbit', pic: '🐰', speech: 'R for Rabbit' },
+    { char: 'S', word: 'Sun', pic: '☀️', speech: 'S for Sun' },
+    { char: 'T', word: 'Tiger', pic: '🐯', speech: 'T for Tiger' },
+    { char: 'U', word: 'Umbrella', pic: '☂️', speech: 'U for Umbrella' },
+    { char: 'V', word: 'Van', pic: '🚐', speech: 'V for Van' },
+    { char: 'W', word: 'Watch', pic: '⌚', speech: 'W for Watch' },
+    { char: 'X', word: 'Xylophone', pic: '🎹', speech: 'X for Xylophone' },
+    { char: 'Y', word: 'Yak', pic: '🐂', speech: 'Y for Yak' },
+    { char: 'Z', word: 'Zebra', pic: '🦓', speech: 'Z for Zebra' }
+  ];
+
+  const swarData = [
+    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अननस' },
+    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आई' },
+    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इमारत' },
+    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ईडलिंबू' },
+    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उंट' },
+    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊस' },
+    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋषी' },
+    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए एडका' },
+    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐरण' },
+    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओठा' },
+    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औषध' },
+    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंगठी' },
+    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः' }
+  ];
+
+  const vyanjanPics = {
+    'क': ['कमळ', '🪷'], 'ख': ['खडू', '🖍️'], 'ग': ['गणपती', '🐘'], 'घ': ['घर', '🏠'],
+    'च': ['चमचा', '🥄'], 'छ': ['छत्री', '☂️'], 'ज': ['जहाज', '🚢'], 'झ': ['झेंडा', '🚩'],
+    'ट': ['टोपली', '🧺'], 'ठ': ['ठसा', '👣'], 'ड': ['डमरू', '🥁'], 'ढ': ['ढग', '☁️'],
+    'ण': ['बाण', '🏹'], 'त': ['तलवार', '⚔️'], 'थ': ['थवा', '🐦'], 'द': ['दप्तर', '🎒'],
+    'ध': ['धनुष्य', '🏹'], 'न': ['नळ', '🚰'], 'प': ['पतंग', '🪁'], 'फ': ['फणस', '🍈'],
+    'ब': ['बदक', '🦆'], 'भ': ['भोपळा', '🎃'], 'म': ['मगर', '🐊'], 'य': ['यज्ञ', '🔥'],
+    'र': ['रथ', ' chariot'.trim()], 'ल': ['लसूण', '🧄'], 'व': ['वडा', '🍩'], 'श': ['शंख', '🐚'],
+    'ष': ['षटकोन', ' Hex'.trim()], 'स': ['ससा', '🐇'], 'ह': ['हत्ती', '🐘'], 'ळ': ['बाळ', '👶'],
+    'क्ष': ['क्षत्रिय', '🛡️'], 'ज्ञ': ['ज्ञान', '📚']
+  };
+
+  const vyanjanList = Object.keys(vyanjanPics);
   const matras = ["", "ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ", "ं", "ः"];
-  const numbersList = Array.from({length: 100}, (_, i) => (i + 1).toString());
+
+  function toMarathiDigits(numStr) {
+    const map = {'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
+    return numStr.split('').map(ch => map[ch] || ch).join('');
+  }
+
+  function getNumberPics(n) {
+    const numEmojis = ['⭐', '🎈', '🍬', '🧸', '🌟', '🍓', '🏀', '🌸', '🦋', '🚂'];
+    const showCount = Math.min(n, 5);
+    return numEmojis[n % numEmojis.length].repeat(showCount);
+  }
+
+  const marathiNumData = Array.from({length: 100}, (_, i) => {
+    const n = i + 1;
+    const mDigit = toMarathiDigits(String(n));
+    return {
+      char: mDigit,
+      word: `अंक ${mDigit}`,
+      pic: getNumberPics(n),
+      speech: mDigit,
+      lang: 'mr-IN'
+    };
+  });
+
+  const engNumData = Array.from({length: 100}, (_, i) => {
+    const n = i + 1;
+    return {
+      char: String(n),
+      word: `Number ${n}`,
+      pic: getNumberPics(n),
+      speech: String(n),
+      lang: 'en-IN'
+    };
+  });
+
+  function buildBarakhadiList(consonant) {
+    const [word, pic] = vyanjanPics[consonant] || [consonant, '✏️'];
+    return matras.map(m => {
+      const ch = consonant + m;
+      return {
+        char: ch,
+        word: `${ch} (${word})`,
+        pic: pic,
+        speech: ch,
+        lang: 'mr-IN'
+      };
+    });
+  }
 
   let currentMode = 'abcd';
   let currentConsonant = 'क';
-  let currentList = abcdList;
+  let currentList = abcdData;
   let currentIndex = 0;
   let strokeColor = '#FF3B30';
   let isDrawing = false;
 
-  // बाराखडी बटणे तयार करणे
   const barakhadiBar = document.getElementById('barakhadi-bar');
   vyanjanList.forEach((v, idx) => {
     const btn = document.createElement('button');
@@ -181,7 +313,7 @@
       document.querySelectorAll('.consonant-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       currentConsonant = v;
-      currentList = matras.map(m => v + m);
+      currentList = buildBarakhadiList(v);
       currentIndex = 0;
       loadChar();
     };
@@ -190,8 +322,8 @@
 
   function resizeCanvas() {
     const main = document.querySelector('main');
-    canvas.width = main.clientWidth - 40;
-    canvas.height = main.clientHeight - 30;
+    canvas.width = Math.max(200, main.clientWidth - 32);
+    canvas.height = Math.max(200, main.clientHeight - 24);
     drawGuide();
   }
   window.addEventListener('resize', resizeCanvas);
@@ -203,13 +335,14 @@
     currentIndex = 0;
 
     if (mode === 'barakhadi') {
-      barakhadiBar.style.display = 'flex';
-      currentList = matras.map(m => currentConsonant + m);
+      barakhadiBar.style.display = 'block';
+      currentList = buildBarakhadiList(currentConsonant);
     } else {
       barakhadiBar.style.display = 'none';
-      if (mode === 'abcd') currentList = abcdList;
-      if (mode === 'swar') currentList = swarList;
-      if (mode === 'numbers') currentList = numbersList;
+      if (mode === 'abcd') currentList = abcdData;
+      if (mode === 'swar') currentList = swarData;
+      if (mode === 'marathi_num') currentList = marathiNumData;
+      if (mode === 'eng_num') currentList = engNumData;
     }
     resizeCanvas();
     loadChar();
@@ -221,46 +354,61 @@
     strokeColor = color;
   }
 
+  function updateBanner() {
+    const item = currentList[currentIndex];
+    document.getElementById('info-pic').innerText = item.pic;
+    if (currentMode === 'abcd') {
+      document.getElementById('info-text').innerText = `${item.char} for ${item.word}`;
+    } else {
+      document.getElementById('info-text').innerText = item.word;
+    }
+  }
+
   function drawGuide() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const text = currentList[currentIndex];
-    const fontSize = Math.min(canvas.width, canvas.height) * 0.62;
-    
+    const item = currentList[currentIndex];
+    const fontSize = Math.min(canvas.width, canvas.height) * 0.58;
+
     ctx.save();
     ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    
-    // फिकट रंगाचा बेस
-    ctx.fillStyle = '#F0F0F0';
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 15);
-    
-    // गिरवण्यासाठी तुटक रेषा (Dotted outline)
+
+    ctx.fillStyle = '#F2F2F2';
+    ctx.fillText(item.char, canvas.width / 2, canvas.height / 2 + 12);
+
     ctx.strokeStyle = '#999999';
     ctx.lineWidth = 4;
     ctx.setLineDash([12, 12]);
-    ctx.strokeText(text, canvas.width / 2, canvas.height / 2 + 15);
+    ctx.strokeText(item.char, canvas.width / 2, canvas.height / 2 + 12);
     ctx.restore();
   }
 
-  // आपोआप आवाज येण्यासाठी फंक्शन
   function speakCurrent() {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    
-    const text = currentList[currentIndex];
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    if (currentMode === 'abcd' || currentMode === 'numbers') {
-      utterance.lang = 'en-IN';
+
+    const item = currentList[currentIndex];
+    let textToSpeak = item.speech;
+    let lang = 'mr-IN';
+
+    if (currentMode === 'abcd') {
+      textToSpeak = `${item.char} for ${item.word}`;
+      lang = 'en-IN';
+    } else if (currentMode === 'eng_num') {
+      lang = 'en-IN';
     } else {
-      utterance.lang = 'mr-IN';
+      lang = 'mr-IN';
     }
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = lang;
     utterance.rate = 0.85;
     window.speechSynthesis.speak(utterance);
   }
 
   function loadChar() {
+    updateBanner();
     drawGuide();
     speakCurrent();
   }
@@ -279,7 +427,6 @@
     loadChar();
   }
 
-  // बोटाने आणि Apple Pencil ने गिरवण्यासाठी टच इव्हेंट्स
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -323,9 +470,9 @@
   canvas.addEventListener('touchmove', moveDraw, {passive: false});
   window.addEventListener('touchend', endDraw);
 
-  // सुरुवातीला लोड करणे
+  updateBanner();
   resizeCanvas();
-  // iPad वर पहिला आवाज अनलॉक करण्यासाठी स्क्रीनवर पहिल्या टचला उच्चार सुरू होईल
+
   document.body.addEventListener('touchstart', function initSpeech() {
     speakCurrent();
     document.body.removeEventListener('touchstart', initSpeech);
