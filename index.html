@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>मुलांची पाटी - ABCD, बाराखडी, १-१००</title>
+  <title> शंभु - ABCD, बाराखडी, १-१००</title>
   <style>
     * {
       box-sizing: border-box;
@@ -158,6 +158,7 @@
 <header>
   <div class="tabs">
     <button class="tab-btn active" onclick="setMode('abcd', this)">ABCD</button>
+    <button class="tab-btn active" onclick="setMode('ABCD', this)">abcd</button>
     <button class="tab-btn" onclick="setMode('swar', this)">स्वर</button>
     <button class="tab-btn" onclick="setMode('barakhadi', this)">बाराखडी</button>
     <button class="tab-btn" onclick="setMode('marathi_num', this)">१-१००</button>
@@ -219,19 +220,19 @@
   ];
 
   const swarData = [
-    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अननस' },
-    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आई' },
-    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इमारत' },
-    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ईडलिंबू' },
-    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उंट' },
-    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊस' },
-    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋषी' },
-    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए एडका' },
-    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐरण' },
-    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओठा' },
-    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औषध' },
-    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंगठी' },
-    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः' }
+    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अ अननस' },
+    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आ आई' },
+    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इ इमारत' },
+    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ई ईडलिंबू' },
+    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उ उंट' },
+    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊ ऊस' },
+    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋऋषी' },
+    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए ए एडका' },
+    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐ ऐरण' },
+    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओ ओठा' },
+    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औऔषध' },
+    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंअंगठी' },
+    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः अः' }
   ];
 
   const vyanjanPics = {
