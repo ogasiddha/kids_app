@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title> शंभु - ABCD, बाराखडी, १-१००</title>
+  <title>शिवशंभु पुजारी - मुलांची पाटी</title>
   <style>
     * {
       box-sizing: border-box;
@@ -81,19 +81,28 @@
     #barakhadi-bar {
       display: none;
       background: #FFE66D;
-      padding: 6px;
+      padding: 8px 10px;
       overflow-x: auto;
+      overflow-y: hidden;
       white-space: nowrap;
       touch-action: pan-x;
+      -webkit-overflow-scrolling: touch;
+      min-height: 48px;
+      align-items: center;
+      border-bottom: 2px solid #F2D14B;
     }
     .consonant-btn {
+      display: inline-block;
+      flex-shrink: 0;
       background: white;
       border: 2px solid #FF6B6B;
       border-radius: 10px;
-      padding: 5px 11px;
-      font-size: 17px;
+      padding: 5px 12px;
+      font-size: 18px;
       font-weight: bold;
-      margin-right: 5px;
+      margin-right: 6px;
+      color: #222;
+      cursor: pointer;
     }
     .consonant-btn.active {
       background: #FF6B6B;
@@ -127,6 +136,7 @@
       justify-content: center;
       align-items: center;
       padding: 8px 16px 14px;
+      min-height: 0;
     }
     canvas {
       background: white;
@@ -151,13 +161,43 @@
     }
     #prev-btn { left: 24px; }
     #next-btn { right: 24px; }
+
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      text-align: center;
+      padding: 24px;
+      transition: opacity 0.4s ease;
+      touch-action: auto;
+    }
+    #splash-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #splash-title {
+      font-size: 44px;
+      font-weight: bold;
+      color: #FFFFFF;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.25);
+      margin: 0;
+    }
   </style>
 </head>
 <body>
 
+<div id="splash-screen" onclick="dismissSplash()">
+  <h1 id="splash-title">शिवशंभु पुजारी</h1>
+</div>
+
 <header>
   <div class="tabs">
-    <button class="tab-btn active" onclick="setMode('abcd', this)">ABCD</button>
+    <button class="tab-btn active" onclick="setMode('abcd', this)">AaBbCc</button>
     <button class="tab-btn" onclick="setMode('swar', this)">स्वर</button>
     <button class="tab-btn" onclick="setMode('barakhadi', this)">बाराखडी</button>
     <button class="tab-btn" onclick="setMode('marathi_num', this)">१-१००</button>
@@ -176,7 +216,7 @@
 
 <div id="info-banner" onclick="speakCurrent()">
   <span id="info-pic">🍎</span>
-  <span id="info-text">A for Apple</span>
+  <span id="info-text">Aa for Apple</span>
 </div>
 
 <main>
@@ -190,48 +230,48 @@
   const ctx = canvas.getContext('2d');
 
   const abcdData = [
-    { char: 'A', word: 'Apple', pic: '🍎', speech: 'A for Apple' },
-    { char: 'B', word: 'Ball', pic: '⚽', speech: 'B for Ball' },
-    { char: 'C', word: 'Cat', pic: '🐱', speech: 'C for Cat' },
-    { char: 'D', word: 'Dog', pic: '🐶', speech: 'D for Dog' },
-    { char: 'E', word: 'Elephant', pic: '🐘', speech: 'E for Elephant' },
-    { char: 'F', word: 'Fish', pic: '🐟', speech: 'F for Fish' },
-    { char: 'G', word: 'Grapes', pic: '🍇', speech: 'G for Grapes' },
-    { char: 'H', word: 'Hen', pic: '🐔', speech: 'H for Hen' },
-    { char: 'I', word: 'Ice cream', pic: '🍨', speech: 'I for Ice cream' },
-    { char: 'J', word: 'Joker', pic: '🃏', speech: 'J for Joker' },
-    { char: 'K', word: 'Kite', pic: '🪁', speech: 'K for Kite' },
-    { char: 'L', word: 'Lion', pic: '🦁', speech: 'L for Lion' },
-    { char: 'M', word: 'Mango', pic: '🥭', speech: 'M for Mango' },
-    { char: 'N', word: 'Nest', pic: '🪺', speech: 'N for Nest' },
-    { char: 'O', word: 'Orange', pic: '🍊', speech: 'O for Orange' },
-    { char: 'P', word: 'Parrot', pic: '🦜', speech: 'P for Parrot' },
-    { char: 'Q', word: 'Queen', pic: '👑', speech: 'Q for Queen' },
-    { char: 'R', word: 'Rabbit', pic: '🐰', speech: 'R for Rabbit' },
-    { char: 'S', word: 'Sun', pic: '☀️', speech: 'S for Sun' },
-    { char: 'T', word: 'Tiger', pic: '🐯', speech: 'T for Tiger' },
-    { char: 'U', word: 'Umbrella', pic: '☂️', speech: 'U for Umbrella' },
-    { char: 'V', word: 'Van', pic: '🚐', speech: 'V for Van' },
-    { char: 'W', word: 'Watch', pic: '⌚', speech: 'W for Watch' },
-    { char: 'X', word: 'Xylophone', pic: '🎹', speech: 'X for Xylophone' },
-    { char: 'Y', word: 'Yak', pic: '🐂', speech: 'Y for Yak' },
-    { char: 'Z', word: 'Zebra', pic: '🦓', speech: 'Z for Zebra' }
+    { char: 'Aa', word: 'Apple', pic: '🍎', speech: 'A for Apple' },
+    { char: 'Bb', word: 'Ball', pic: '⚽', speech: 'B for Ball' },
+    { char: 'Cc', word: 'Cat', pic: '🐱', speech: 'C for Cat' },
+    { char: 'Dd', word: 'Dog', pic: '🐶', speech: 'D for Dog' },
+    { char: 'Ee', word: 'Elephant', pic: '🐘', speech: 'E for Elephant' },
+    { char: 'Ff', word: 'Fish', pic: '🐟', speech: 'F for Fish' },
+    { char: 'Gg', word: 'Grapes', pic: '🍇', speech: 'G for Grapes' },
+    { char: 'Hh', word: 'Hen', pic: '🐔', speech: 'H for Hen' },
+    { char: 'Ii', word: 'Ice cream', pic: '🍨', speech: 'I for Ice cream' },
+    { char: 'Jj', word: 'Joker', pic: '🃏', speech: 'J for Joker' },
+    { char: 'Kk', word: 'Kite', pic: '🪁', speech: 'K for Kite' },
+    { char: 'Ll', word: 'Lion', pic: '🦁', speech: 'L for Lion' },
+    { char: 'Mm', word: 'Mango', pic: '🥭', speech: 'M for Mango' },
+    { char: 'Nn', word: 'Nest', pic: '🪺', speech: 'N for Nest' },
+    { char: 'Oo', word: 'Orange', pic: '🍊', speech: 'O for Orange' },
+    { char: 'Pp', word: 'Parrot', pic: '🦜', speech: 'P for Parrot' },
+    { char: 'Qq', word: 'Queen', pic: '👑', speech: 'Q for Queen' },
+    { char: 'Rr', word: 'Rabbit', pic: '🐰', speech: 'R for Rabbit' },
+    { char: 'Ss', word: 'Sun', pic: '☀️', speech: 'S for Sun' },
+    { char: 'Tt', word: 'Tiger', pic: '🐯', speech: 'T for Tiger' },
+    { char: 'Uu', word: 'Umbrella', pic: '☂️', speech: 'U for Umbrella' },
+    { char: 'Vv', word: 'Van', pic: '🚐', speech: 'V for Van' },
+    { char: 'Ww', word: 'Watch', pic: '⌚', speech: 'W for Watch' },
+    { char: 'Xx', word: 'Xylophone', pic: '🎹', speech: 'X for Xylophone' },
+    { char: 'Yy', word: 'Yak', pic: '🐂', speech: 'Y for Yak' },
+    { char: 'Zz', word: 'Zebra', pic: '🦓', speech: 'Z for Zebra' }
   ];
 
   const swarData = [
-    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अ अननस' },
-    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आ आई' },
-    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इ इमारत' },
-    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ई ईडलिंबू' },
-    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उ उंट' },
-    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊ ऊस' },
-    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋ ऋषी' },
-    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए ए एडका' },
-    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐ ऐरण' },
-    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओ ओठा' },
-    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औऔषध' },
-    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंअंगठी' },
-    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः अः' }
+    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अननस' },
+    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आई' },
+    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इमारत' },
+    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ईडलिंबू' },
+    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उंट' },
+    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊस' },
+    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋषी' },
+    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए एडका' },
+    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐरण' },
+    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओठा' },
+    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औषध' },
+    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंगठी' },
+    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः' }
   ];
 
   const vyanjanPics = {
@@ -241,13 +281,26 @@
     'ण': ['बाण', '🏹'], 'त': ['तलवार', '⚔️'], 'थ': ['थवा', '🐦'], 'द': ['दप्तर', '🎒'],
     'ध': ['धनुष्य', '🏹'], 'न': ['नळ', '🚰'], 'प': ['पतंग', '🪁'], 'फ': ['फणस', '🍈'],
     'ब': ['बदक', '🦆'], 'भ': ['भोपळा', '🎃'], 'म': ['मगर', '🐊'], 'य': ['यज्ञ', '🔥'],
-    'र': ['रथ', ' chariot'.trim()], 'ल': ['लसूण', '🧄'], 'व': ['वडा', '🍩'], 'श': ['शंख', '🐚'],
-    'ष': ['षटकोन', ' Hex'.trim()], 'स': ['ससा', '🐇'], 'ह': ['हत्ती', '🐘'], 'ळ': ['बाळ', '👶'],
+    'र': ['रथ', '🛒'], 'ल': ['लसूण', '🧄'], 'व': ['वडा', '🍩'], 'श': ['शंख', '🐚'],
+    'ष': ['षटकोन', '🔷'], 'स': ['ससा', '🐇'], 'ह': ['हत्ती', '🐘'], 'ळ': ['बाळ', '👶'],
     'क्ष': ['क्षत्रिय', '🛡️'], 'ज्ञ': ['ज्ञान', '📚']
   };
 
   const vyanjanList = Object.keys(vyanjanPics);
   const matras = ["", "ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ", "ं", "ः"];
+
+  const marathiNumberWords = [
+    "एक","दोन","तीन","चार","पाच","सहा","सात","आठ","नऊ","दहा",
+    "अकरा","बारा","तेरा","चौदा","पंधरा","सोळा","सतरा","अठरा","एकोणीस","वीस",
+    "एकवीस","बावीस","तेवीस","चोवीस","पंचवीस","सव्वीस","सत्तावीस","अठ्ठावीस","एकोणतीस","तीस",
+    "एकतीस","बत्तीस","तेहतीस","चौतीस","पस्तीस","छत्तीस","सदतीस","अडतीस","एकोणचाळीस","चाळीस",
+    "एक्केचाळीस","बेचाळीस","त्रेचाळीस","चव्वेचाळीस","पंचेचाळीस","सेहेचाळीस","सत्तेचाळीस","अठ्ठेचाळीस","एकोणपन्नास","पन्नास",
+    "एकावन्न","बावन्न","त्रेपन्न","चोपन्न","पंचावन्न","छप्पन्न","सत्तावन्न","अठ्ठावन्न","एकोणसाठ","साठ",
+    "एकसष्ठ","बासष्ठ","त्रेसष्ठ","चौसष्ठ","पासष्ठ","छसष्ठ","सदुसष्ठ","अडुसष्ठ","एकोणसत्तर","सत्तर",
+    "एक्काहत्तर","बाहत्तर","त्र्याहत्तर","चौर्‍याहत्तर","पंच्याहत्तर","शहात्तर","सत्त्याहत्तर","अठ्ठ्याहत्तर","एकोणऐंशी","ऐंशी",
+    "एक्याऐंशी","ब्याऐंशी","त्र्याऐंशी","चौऱ्याऐंशी","पंच्याऐंशी","शहाऐंशी","सत्त्याऐंशी","अठ्ठ्याऐंशी","एकोणनव्वद","नव्वद",
+    "एक्याण्णव","ब्याण्णव","त्र्याण्णव","चौऱ्याण्णव","पंच्याण्णव","शहाण्णव","सत्त्याण्णव","अठ्ठ्याण्णव","नव्याण्णव","शंभर"
+  ];
 
   function toMarathiDigits(numStr) {
     const map = {'0':'०','1':'१','2':'२','3':'३','4':'४','5':'५','6':'६','7':'७','8':'८','9':'९'};
@@ -263,11 +316,12 @@
   const marathiNumData = Array.from({length: 100}, (_, i) => {
     const n = i + 1;
     const mDigit = toMarathiDigits(String(n));
+    const mWord = marathiNumberWords[i];
     return {
       char: mDigit,
-      word: `अंक ${mDigit}`,
+      word: `${mDigit} (${mWord})`,
       pic: getNumberPics(n),
-      speech: mDigit,
+      speech: mWord,
       lang: 'mr-IN'
     };
   });
@@ -335,7 +389,7 @@
     currentIndex = 0;
 
     if (mode === 'barakhadi') {
-      barakhadiBar.style.display = 'block';
+      barakhadiBar.style.display = 'flex';
       currentList = buildBarakhadiList(currentConsonant);
     } else {
       barakhadiBar.style.display = 'none';
@@ -367,7 +421,8 @@
   function drawGuide() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const item = currentList[currentIndex];
-    const fontSize = Math.min(canvas.width, canvas.height) * 0.58;
+    const ratio = currentMode === 'abcd' ? 0.45 : 0.58;
+    const fontSize = Math.min(canvas.width, canvas.height) * ratio;
 
     ctx.save();
     ctx.font = `bold ${fontSize}px sans-serif`;
@@ -384,10 +439,25 @@
     ctx.restore();
   }
 
-  function speakCurrent() {
+  function speakText(text, lang) {
     if (!('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const matchedVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith((lang || 'mr-IN').slice(0, 2).toLowerCase()));
+    if (matchedVoice) {
+      utterance.voice = matchedVoice;
+    }
+    utterance.lang = lang || 'mr-IN';
+    utterance.rate = 0.85;
+    window.speechSynthesis.speak(utterance);
+  }
 
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = () => {};
+  }
+
+  function speakCurrent() {
     const item = currentList[currentIndex];
     let textToSpeak = item.speech;
     let lang = 'mr-IN';
@@ -400,11 +470,7 @@
     } else {
       lang = 'mr-IN';
     }
-
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = lang;
-    utterance.rate = 0.85;
-    window.speechSynthesis.speak(utterance);
+    speakText(textToSpeak, lang);
   }
 
   function loadChar() {
@@ -470,13 +536,26 @@
   canvas.addEventListener('touchmove', moveDraw, {passive: false});
   window.addEventListener('touchend', endDraw);
 
+  let splashDismissed = false;
+  function dismissSplash() {
+    if (splashDismissed) return;
+    splashDismissed = true;
+    const splash = document.getElementById('splash-screen');
+    splash.classList.add('fade-out');
+    setTimeout(() => {
+      splash.style.display = 'none';
+      resizeCanvas();
+      speakCurrent();
+    }, 400);
+  }
+
   updateBanner();
   resizeCanvas();
+  speakText('शिवशंभु पुजारी', 'mr-IN');
 
-  document.body.addEventListener('touchstart', function initSpeech() {
-    speakCurrent();
-    document.body.removeEventListener('touchstart', initSpeech);
-  }, {once: true});
+  setTimeout(() => {
+    dismissSplash();
+  }, 1800);
 </script>
 
 </body>
