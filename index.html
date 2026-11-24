@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>मुलांची पाटी - ABCD, बाराखडी, १-१००</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF9E6;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: #FF6B6B;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .tab-btn {
+      background: #FFE66D;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #4ECDC4;
+      color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .color-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid white;
+      cursor: pointer;
+    }
+    .color-dot.selected {
+      transform: scale(1.2);
+      border-color: #333;
+    }
+    .action-btn {
+      background: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #barakhadi-bar {
+      display: none;
+      background: #FFE66D;
+      padding: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      gap: 6px;
+    }
+    .consonant-btn {
+      background: white;
+      border: 2px solid #FF6B6B;
+      border-radius: 10px;
+      padding: 5px 12px;
+      font-size: 18px;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    .consonant-btn.active {
+      background: #FF6B6B;
+      color: white;
+    }
+    main {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #4ECDC4;
+      color: white;
+      border: none;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 30px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 10;
+    }
+    #prev-btn { left: 15px; }
+    #next-btn { right: 15px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setMode('abcd', this)">ABCD</button>
+    <button class="tab-btn" onclick="setMode('swar', this)">स्वर (अ-अः)</button>
+    <button class="tab-btn" onclick="setMode('barakhadi', this)">बाराखडी</button>
+    <button class="tab-btn" onclick="setMode('numbers', this)">1 - 100</button>
+  </div>
+  <div class="tools">
+    <div class="color-dot selected" style="background: #FF3B30;" onclick="setColor('#FF3B30', this)"></div>
+    <div class="color-dot" style="background: #007AFF;" onclick="setColor('#007AFF', this)"></div>
+    <div class="color-dot" style="background: #34C759;" onclick="setColor('#34C759', this)"></div>
+    <div class="color-dot" style="background: #AF52DE;" onclick="setColor('#AF52DE', this)"></div>
+    <button class="action-btn" onclick="clearCanvas()">पुसा</button>
+  </div>
+</header>
+
+<div id="barakhadi-bar"></div>
+
+<main>
+  <button id="prev-btn" class="nav-btn" onclick="prevItem()">&#8249;</button>
+  <canvas id="board"></canvas>
+  <button id="next-btn" class="nav-btn" onclick="nextItem()">&#8250;</button>
+</main>
+
+<script>
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  
+  const abcdList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const swarList = ["अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ", "ए", "ऐ", "ओ", "औ", "अं", "अः"];
+  const vyanjanList = ["क","ख","ग","घ","च","छ","ज","झ","ट","ठ","ड","ढ","ण","त","थ","द","ध","न","प","फ","ब","भ","म","य","र","ल","व","श","ष","स","ह","ळ","क्ष","ज्ञ"];
+  const matras = ["", "ा", "ि", "ी", "ु", "ू", "े", "ै", "ो", "ौ", "ं", "ः"];
+  const numbersList = Array.from({length: 100}, (_, i) => (i + 1).toString());
+
+  let currentMode = 'abcd';
+  let currentConsonant = 'क';
+  let currentList = abcdList;
+  let currentIndex = 0;
+  let strokeColor = '#FF3B30';
+  let isDrawing = false;
+
+  // बाराखडी बटणे तयार करणे
+  const barakhadiBar = document.getElementById('barakhadi-bar');
+  vyanjanList.forEach((v, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'consonant-btn' + (idx === 0 ? ' active' : '');
+    btn.innerText = v;
+    btn.onclick = () => {
+      document.querySelectorAll('.consonant-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentConsonant = v;
+      currentList = matras.map(m => v + m);
+      currentIndex = 0;
+      loadChar();
+    };
+    barakhadiBar.appendChild(btn);
+  });
+
+  function resizeCanvas() {
+    const main = document.querySelector('main');
+    canvas.width = main.clientWidth - 40;
+    canvas.height = main.clientHeight - 30;
+    drawGuide();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function setMode(mode, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = mode;
+    currentIndex = 0;
+
+    if (mode === 'barakhadi') {
+      barakhadiBar.style.display = 'flex';
+      currentList = matras.map(m => currentConsonant + m);
+    } else {
+      barakhadiBar.style.display = 'none';
+      if (mode === 'abcd') currentList = abcdList;
+      if (mode === 'swar') currentList = swarList;
+      if (mode === 'numbers') currentList = numbersList;
+    }
+    resizeCanvas();
+    loadChar();
+  }
+
+  function setColor(color, el) {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    strokeColor = color;
+  }
+
+  function drawGuide() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const text = currentList[currentIndex];
+    const fontSize = Math.min(canvas.width, canvas.height) * 0.62;
+    
+    ctx.save();
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // फिकट रंगाचा बेस
+    ctx.fillStyle = '#F0F0F0';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 15);
+    
+    // गिरवण्यासाठी तुटक रेषा (Dotted outline)
+    ctx.strokeStyle = '#999999';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([12, 12]);
+    ctx.strokeText(text, canvas.width / 2, canvas.height / 2 + 15);
+    ctx.restore();
+  }
+
+  // आपोआप आवाज येण्यासाठी फंक्शन
+  function speakCurrent() {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    const text = currentList[currentIndex];
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    if (currentMode === 'abcd' || currentMode === 'numbers') {
+      utterance.lang = 'en-IN';
+    } else {
+      utterance.lang = 'mr-IN';
+    }
+    utterance.rate = 0.85;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function loadChar() {
+    drawGuide();
+    speakCurrent();
+  }
+
+  function clearCanvas() {
+    drawGuide();
+  }
+
+  function prevItem() {
+    currentIndex = (currentIndex - 1 + currentList.length) % currentList.length;
+    loadChar();
+  }
+
+  function nextItem() {
+    currentIndex = (currentIndex + 1) % currentList.length;
+    loadChar();
+  }
+
+  // बोटाने आणि Apple Pencil ने गिरवण्यासाठी टच इव्हेंट्स
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top
+    };
+  }
+
+  function startDraw(e) {
+    isDrawing = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+  }
+
+  function moveDraw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.lineWidth = 22;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = strokeColor;
+    ctx.setLineDash([]);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  function endDraw() {
+    isDrawing = false;
+    ctx.closePath();
+  }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', moveDraw);
+  window.addEventListener('mouseup', endDraw);
+
+  canvas.addEventListener('touchstart', startDraw, {passive: false});
+  canvas.addEventListener('touchmove', moveDraw, {passive: false});
+  window.addEventListener('touchend', endDraw);
+
+  // सुरुवातीला लोड करणे
+  resizeCanvas();
+  // iPad वर पहिला आवाज अनलॉक करण्यासाठी स्क्रीनवर पहिल्या टचला उच्चार सुरू होईल
+  document.body.addEventListener('touchstart', function initSpeech() {
+    speakCurrent();
+    document.body.removeEventListener('touchstart', initSpeech);
+  }, {once: true});
+</script>
+
+</body>
+</html>
