@@ -176,8 +176,8 @@
       z-index: 9999;
       text-align: center;
       padding: 24px;
-      transition: opacity 0.4s ease;
-      touch-action: auto;
+      transition: opacity 0.35s ease;
+      touch-action: manipulation;
     }
     #splash-screen.fade-out {
       opacity: 0;
@@ -194,7 +194,7 @@
 </head>
 <body>
 
-<div id="splash-screen" onclick="dismissSplash()">
+<div id="splash-screen" onclick="dismissSplash()" ontouchstart="dismissSplash()">
   <h1 id="splash-title">शिवशंभु पुजारी</h1>
 </div>
 
@@ -277,19 +277,19 @@
   }));
 
   const swarData = [
-    { char: 'अ', word: 'अननस', pic: '🍍', speech: 'अ अननस' },
-    { char: 'आ', word: 'आई', pic: '👩', speech: 'आ आई' },
-    { char: 'इ', word: 'इमारत', pic: '🏢', speech: 'इ इमारत' },
-    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speech: 'ई ईडलिंबू' },
-    { char: 'उ', word: 'उंट', pic: '🐪', speech: 'उ उंट' },
-    { char: 'ऊ', word: 'ऊस', pic: '🎋', speech: 'ऊ ऊस' },
-    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speech: 'ऋ ऋषी' },
-    { char: 'ए', word: 'एडका', pic: '🐐', speech: 'ए एडका' },
-    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speech: 'ऐ ऐरण' },
-    { char: 'ओ', word: 'ओठा', pic: '👄', speech: 'ओ ओठा' },
-    { char: 'औ', word: 'औषध', pic: '💊', speech: 'औ औषध' },
-    { char: 'अं', word: 'अंगठी', pic: '💍', speech: 'अं अंगठी' },
-    { char: 'अः', word: 'अः', pic: '✨', speech: 'अः' }
+    { char: 'अ', word: 'अननस', pic: '🍍', speechList: ['अ', 'अ अननस'] },
+    { char: 'आ', word: 'आई', pic: '👩', speechList: ['आ', 'आ आई'] },
+    { char: 'इ', word: 'इमारत', pic: '🏢', speechList: ['इ', 'इ इमारत'] },
+    { char: 'ई', word: 'ईडलिंबू', pic: '🍋', speechList: ['ई', 'ई ईडलिंबू'] },
+    { char: 'उ', word: 'उंट', pic: '🐪', speechList: ['उ', 'उ उंट'] },
+    { char: 'ऊ', word: 'ऊस', pic: '🎋', speechList: ['ऊ', 'ऊ ऊस'] },
+    { char: 'ऋ', word: 'ऋषी', pic: '🧘', speechList: ['ऋ', 'ऋ ऋषी'] },
+    { char: 'ए', word: 'एडका', pic: '🐐', speechList: ['ए', 'ए एडका'] },
+    { char: 'ऐ', word: 'ऐरण', pic: '🔨', speechList: ['ऐ', 'ऐ ऐरण'] },
+    { char: 'ओ', word: 'ओठा', pic: '👄', speechList: ['ओ', 'ओ ओठा'] },
+    { char: 'औ', word: 'औषध', pic: '💊', speechList: ['औ', 'औ औषध'] },
+    { char: 'अं', word: 'अंगठी', pic: '💍', speechList: ['अं', 'अं अंगठी'] },
+    { char: 'अः', word: 'अः', pic: '✨', speechList: ['अः', 'अः'] }
   ];
 
   const vyanjanPics = {
@@ -432,6 +432,8 @@
     document.getElementById('info-pic').innerText = item.pic;
     if (currentMode === 'ABCD' || currentMode === 'abcd') {
       document.getElementById('info-text').innerText = item.label;
+    } else if (currentMode === 'swar') {
+      document.getElementById('info-text').innerText = `${item.char}, ${item.char} ${item.word}`;
     } else {
       document.getElementById('info-text').innerText = item.word;
     }
@@ -458,68 +460,75 @@
   }
 
   function pickVoice(lang) {
-    if (!('speechSynthesis' in window)) return null;
-    const voices = window.speechSynthesis.getVoices() || [];
-    if (!voices.length) return null;
+    try {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = window.speechSynthesis.getVoices() || [];
+      if (!voices.length) return null;
 
-    const targetLang = (lang || 'mr-IN').toLowerCase();
-    const femaleKeywords = ['female', 'veena', 'riya', 'neerja', 'aditi', 'lekha', 'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'zira'];
+      const targetLang = (lang || 'mr-IN').toLowerCase();
+      const femaleKeywords = ['female', 'veena', 'riya', 'neerja', 'aditi', 'lekha', 'samantha', 'victoria', 'karen', 'moira', 'tessa', 'fiona', 'zira'];
 
-    const isFemale = (v) => {
-      const n = (v.name || '').toLowerCase();
-      return femaleKeywords.some(k => n.includes(k));
-    };
+      const isFemale = (v) => {
+        const n = (v.name || '').toLowerCase();
+        return femaleKeywords.some(k => n.includes(k));
+      };
 
-    if (targetLang.startsWith('en')) {
-      const enInVoices = voices.filter(v => (v.lang || '').toLowerCase().includes('en-in') || (v.lang || '').toLowerCase().includes('en_in'));
-      if (enInVoices.length) {
-        return enInVoices.find(isFemale) || enInVoices[0];
+      if (targetLang.startsWith('en')) {
+        const enInVoices = voices.filter(v => (v.lang || '').toLowerCase().includes('en-in') || (v.lang || '').toLowerCase().includes('en_in'));
+        if (enInVoices.length) return enInVoices.find(isFemale) || enInVoices[0];
+        const anyEnVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
+        if (anyEnVoices.length) return anyEnVoices.find(isFemale) || anyEnVoices[0];
       }
-      const anyEnVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith('en'));
-      if (anyEnVoices.length) {
-        return anyEnVoices.find(isFemale) || anyEnVoices[0];
-      }
-    }
 
-    const prefix = targetLang.slice(0, 2);
-    const matchedLangVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith(prefix));
-    if (matchedLangVoices.length) {
-      return matchedLangVoices.find(isFemale) || matchedLangVoices[0];
-    }
-
+      const prefix = targetLang.slice(0, 2);
+      const matchedLangVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith(prefix));
+      if (matchedLangVoices.length) return matchedLangVoices.find(isFemale) || matchedLangVoices[0];
+    } catch (e) {}
     return null;
   }
 
+  let speakQueueTimer = null;
+
+  function speakSequence(texts, lang) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      if (speakQueueTimer) {
+        clearTimeout(speakQueueTimer);
+        speakQueueTimer = null;
+      }
+      window.speechSynthesis.cancel();
+
+      const chosenLang = lang || 'mr-IN';
+      const voice = pickVoice(chosenLang);
+
+      texts.forEach((txt, idx) => {
+        const utterance = new SpeechSynthesisUtterance(txt);
+        utterance.lang = chosenLang;
+        if (voice) utterance.voice = voice;
+        utterance.pitch = chosenLang.toLowerCase().startsWith('en') ? 1.15 : 1.0;
+        utterance.rate = 0.85;
+        window.speechSynthesis.speak(utterance);
+      });
+    } catch (e) {}
+  }
+
   function speakText(text, lang) {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const chosenLang = lang || 'mr-IN';
-    utterance.lang = chosenLang;
-
-    const voice = pickVoice(chosenLang);
-    if (voice) {
-      utterance.voice = voice;
-    }
-
-    if (chosenLang.toLowerCase().startsWith('en')) {
-      utterance.pitch = 1.15;
-      utterance.rate = 0.85;
-    } else {
-      utterance.rate = 0.85;
-    }
-
-    window.speechSynthesis.speak(utterance);
+    speakSequence([text], lang);
   }
 
   if ('speechSynthesis' in window) {
     window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
+      try { window.speechSynthesis.getVoices(); } catch (e) {}
     };
   }
 
   function speakCurrent() {
     const item = currentList[currentIndex];
+    if (currentMode === 'swar' && Array.isArray(item.speechList)) {
+      speakSequence(item.speechList, 'mr-IN');
+      return;
+    }
+
     let textToSpeak = item.speech;
     let lang = 'mr-IN';
 
@@ -604,7 +613,7 @@
       splash.style.display = 'none';
       resizeCanvas();
       speakCurrent();
-    }, 400);
+    }, 350);
   }
 
   updateBanner();
