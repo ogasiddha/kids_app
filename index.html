@@ -89,7 +89,7 @@
       white-space: nowrap;
       touch-action: pan-x;
       -webkit-overflow-scrolling: touch;
-      min-height: 50px;
+      min-height: 52px;
       align-items: center;
       border-bottom: 2px solid #F2D14B;
     }
@@ -487,21 +487,15 @@
     return null;
   }
 
-  let speakQueueTimer = null;
-
   function speakSequence(texts, lang) {
     try {
       if (!('speechSynthesis' in window)) return;
-      if (speakQueueTimer) {
-        clearTimeout(speakQueueTimer);
-        speakQueueTimer = null;
-      }
       window.speechSynthesis.cancel();
 
       const chosenLang = lang || 'mr-IN';
       const voice = pickVoice(chosenLang);
 
-      texts.forEach((txt, idx) => {
+      texts.forEach((txt) => {
         const utterance = new SpeechSynthesisUtterance(txt);
         utterance.lang = chosenLang;
         if (voice) utterance.voice = voice;
